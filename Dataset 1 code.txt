@@ -1,0 +1,74 @@
+#Importing Libs
+import pandas as pd 
+import matplotlib.pyplot as plt 
+import numpy as np
+import pylab as pl
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
+from pandas .plotting import scatter_matrix
+from matplotlib import cm
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+
+#reading data 
+df = pd.read_csv('news popularity.csv')
+df.head()
+
+#Choose which columns are relevant to train to predict sales
+x_features = ['n_tokens_title','n_tokens_content','global_rate_positive_words','global_rate_negative_words','avg_positive_polarity','avg_negative_polarity','global_subjectivity','global_subjectivity','global_sentiment_polarity','average_token_length']
+X = df[x_features]
+y = df['shares']
+
+
+#Exploratory Analysis
+print(df.shape)
+print (df['shares'].unique())
+print (df.groupby('shares').size())
+
+#Exploratory Analysis, data cleaning to drop unused columns
+plt.savefig('shares_box')
+plt.show()
+df.drop(['n_unique_tokens','n_non_stop_unique_tokens','url','url','timedelta','n_non_stop_words','num_hrefs','num_self_hrefs','num_imgs','num_videos','num_keywords','data_channel_is_lifestyle','data_channel_is_entertainment','data_channel_is_bus','data_channel_is_socmed','data_channel_is_tech','data_channel_is_world','kw_min_min','kw_max_min','kw_max_min','kw_avg_min','kw_min_max','kw_max_max','kw_avg_max','kw_min_avg','kw_max_avg','kw_avg_avg','self_reference_min_shares','self_reference_max_shares','self_reference_avg_sharess','weekday_is_monday','weekday_is_tuesday','weekday_is_wednesday','weekday_is_thursday','weekday_is_friday','is_weekend','LDA_00','LDA_01','LDA_02','LDA_03','LDA_04','min_positive_polarity','max_positive_polarity','min_negative_polarity','max_negative_polarity','title_subjectivity','title_sentiment_polarity','abs_title_subjectivity','abs_title_sentiment_polarity', 'weekday_is_saturday','weekday_is_sunday'],axis='columns').hist(bins=30, figsize=(20,20)) 
+pl.suptitle("Shares Histogram for each numeric input variable") 
+plt.savefig('shares_hist')
+plt.show()
+
+#Splitting Training and test sets
+X_train,X_test,y_train,y_test, = train_test_split(X,y,test_size = 0.3,random_state=5)
+scaler = MinMaxScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+#Machine Learning
+#Decision Tree Algo
+clf = DecisionTreeClassifier().fit(X_train,y_train)
+print ('Accuracy of Decision Tree classifier on training set: {:.2f}'
+      .format(clf.score(X_train,y_train)))
+print ('Accurary of Decision tree on test set: {:.2f}'
+      .format(clf.score(X_test,y_test)))
+
+
+#KNN
+knn = KNeighborsClassifier()
+knn.fit(X_train,y_train)
+print('K-NN classifier accuracy rate on training set: {:.2f}'
+      .format(knn.score(X_train,y_train)))
+print('K-NN classifier accuracy rate on test set: {:.2f}'
+      .format(knn.score(X_test,y_test)))
+
+#SVM
+svm = SVC()
+svm.fit(X_train,y_train)
+print('Accuracy of SVM classifier on training set: {:.2f}'
+      .format(svm.score(X_train,y_train)))
+print('Accuracy of SVM classifier on test set: {:.2f}'
+      .format(svm.score(X_test,y_test))) 
+
+pred = svm.predict(X_test) 
+print(confusion_matrix(y_test,pred))
+print(classification_report(y_test,pred))
